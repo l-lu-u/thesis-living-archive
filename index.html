@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Living Archive: ontology analysis</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="./extract_trees.js"></script>
+    <script src="./draw_trees.js"></script>
+    <style>
+        body{
+            overflow-x: hidden;
+            margin: 0;
+        }
+        #main{
+            overflow: visible;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+        #main:active{
+            cursor: grab;
+        }
+        #trees{
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 20%;
+            background-color: aliceblue;
+            display: flex;
+            overflow: scroll;
+            transition: transform 0.3s ease;
+        }
+        #control, #close,#show{
+            position: relative;
+            color: white;
+            font-family: sans-serif;
+            text-align: center;
+            top:0;
+            width: 20px;
+            height: 20px;
+            background-color: blue;
+            padding: 10px;
+            cursor: pointer;
+        }
+        #control:hover{
+            background-color: black;
+        }
+        #control::before{
+            content: "\2193";
+        }
+        #control.expanded::before{
+            content: "\2191";
+        }
+        line {
+        stroke: #ccc;
+        marker-end:url(#arrow);
+        }
+        text {
+        text-anchor: middle;
+        font-family: "Helvetica Neue", Helvetica, sans-serif;
+        
+        }
+        .treeCanvas{
+            overflow: visible;
+        }
+        .node{
+            cursor: pointer;
+        }
+        .node text{
+            font-size: 10px;
+            transform-origin: 0 0;
+            transform-box: fill-box;
+            transform: rotate(45deg);
+            text-anchor: start;
+            transition: .3s ease-out;
+        }
+        .node text:hover{
+            font-size: 16px;
+            fill: blue;
+        }
+        #arrow{
+            fill: rgb(174, 172, 172);
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <svg id="main">
+            <g>
+                <g class="links"></g>
+                <g class="nodes"></g>
+            </g>
+        </svg>
+      </div>
+      
+    <script>
+        let  svg = d3.select("#main")
+        svg = svg.call(d3.zoom().on("zoom", zoomed)).select("g")
+        function zoomed(e) {
+            const {x,y,k} = e.transform
+          svg.attr("transform", "translate(" + x + "," + y + ")" + " scale(" + k + ")");
+        }
+        svg.append("defs").append("marker")
+            .attr("id", "arrow")
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 20)
+            .attr("refY", 0)
+            .attr("markerWidth", 8)
+            .attr("markerHeight", 8)
+            .attr("orient", "auto")
+            .append("svg:path")
+            .attr("d", "M0,-5L10,0L0,5");
+        const width = window.innerWidth, height = window.innerHeight
+        const link = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSELbgoOxmNPPX3tQa6rqRGTMj0lon6oXjIHleLWz6hr-6n-W20oB_NlcwpNK5KI5QcB9gpZKPjbYCg/pub?output=csv"
+        d3.csv(link).then(data=>{
+            
+            const treesStructures = trees(data)
+            console.log(treesStructures)
+            drawTrees(treesStructures)
+            const nodeLabels = [...data.map(d=>d.source),...data.map(d=>d.target)]
+                .filter((e,n,I)=>I.indexOf(e)===n)
+            const nodes = nodeLabels.map(e=>({'name':e}))
+            const links = data.map(d=>({source:nodeLabels.indexOf(d.source),target:nodeLabels.indexOf(d.target), interaction:d.interaction}))
+            const simulation = d3.forceSimulation(nodes)
+                .force('charge', d3.forceManyBody().strength(-2500))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('link', d3.forceLink().links(links))
+                .on('tick', ticked);
+
+            function updateLinks() {
+                const u = d3.select('.links')
+                    .selectAll('line')
+                    .data(links)
+                    .join('line')
+                    .attr('x1', function(d) {
+                        return d.source.x
+                    })
+                    .attr('y1', function(d) {
+                        return d.source.y
+                    })
+                    .attr('x2', function(d) {
+                        return d.target.x 
+                    })
+                    .attr('y2', function(d) {
+                        return d.target.y 
+                    });
+            }
+
+            function updateNodes() {
+                u = d3.select('.nodes')
+                    .selectAll('text')
+                    .data(nodes)
+                    .join('text')
+                    .text(function(d) {
+                        return d.name
+                    })
+                    .attr('x', function(d) {
+                        return d.x
+                    })
+                    .attr('y', function(d) {
+                        return d.y
+                    })
+                    .attr('dy', function(d) {
+                        return 5
+                    });
+            }
+            const edgepaths = svg.selectAll(".edgepath")
+                .data(links)
+                .join('path')
+                .attr('class', 'edgepath')
+                .attr('fill-opacity', 0)
+                .attr('stroke-opacity', 0)
+                .attr('id', function (d, i) {return 'edgepath' + i})
+                .style("pointer-events", "none");
+            const edgelabels = svg.selectAll(".edgelabel")
+                .data(links)
+                .join('text')
+                .style("pointer-events", "none")
+                .attr('class', 'edgelabel')
+                .attr('id', function (d, i) {return 'edgelabel' + i})
+                .attr('font-size', 10)
+                .attr('fill', '#aaa');
+            edgelabels.append('textPath')
+                .attr('xlink:href', function (d, i) {return '#edgepath' + i})
+                .style("text-anchor", "middle")
+                .style("pointer-events", "none")
+                .attr("startOffset", "50%")
+                .text(function (d) {return d.interaction});
+
+            function ticked() {
+                updateLinks()
+                updateNodes()
+                edgepaths.attr('d', function (d) {
+                    return 'M ' + d.source.x + ' ' + d.source.y + ' L ' + d.target.x + ' ' + d.target.y;
+                });
+                edgelabels.attr('transform', function (d) {
+                    if (d.target.x < d.source.x) {
+                        var bbox = this.getBBox();
+
+                        rx = bbox.x + bbox.width / 2;
+                        ry = bbox.y + bbox.height / 2;
+                        return 'rotate(180 ' + rx + ' ' + ry + ')';
+                    }
+                    else {
+                        return 'rotate(0)';
+                    }
+                });
+
+            }
+    })
+
+
+    </script>
+</body>
+</html>
