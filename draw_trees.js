@@ -39,20 +39,22 @@ function drawTrees(trees) {
         nodes
             .append("circle")
             .attr("r",2)
+            .attr("fill", "teal")
             
         nodes.append("text")
             .attr("y",8)
             .text(d=>d.data.name)
+            .attr("fill", "teal")
         const edges = edgesLayer.selectAll(".edge")
-        .data(root.links())
-        .join("g")
-        .classed("edge",true)
+            .data(root.links())
+            .join("g")
+            .classed("edge",true)
 
         edges.append("line")
-        .attr("x1", d=> d.source.x)
-        .attr("x2", d=> d.target.x)
-        .attr("y1", d=> d.source.y+10)
-        .attr("y2", d=> d.target.y+10)
+            .attr("x1", d=> d.source.x)
+            .attr("x2", d=> d.target.x)
+            .attr("y1", d=> d.source.y+10)
+            .attr("y2", d=> d.target.y+10)
     });
     
 }

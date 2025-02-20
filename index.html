@@ -8,82 +8,7 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="./extract_trees.js"></script>
     <script src="./draw_trees.js"></script>
-    <style>
-        body{
-            overflow-x: hidden;
-            margin: 0;
-        }
-        #main{
-            overflow: visible;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-        }
-        #main:active{
-            cursor: grab;
-        }
-        #trees{
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            height: 20%;
-            background-color: aliceblue;
-            display: flex;
-            overflow: scroll;
-            transition: transform 0.3s ease;
-        }
-        #control, #close,#show{
-            position: relative;
-            color: white;
-            font-family: sans-serif;
-            text-align: center;
-            top:0;
-            width: 20px;
-            height: 20px;
-            background-color: blue;
-            padding: 10px;
-            cursor: pointer;
-        }
-        #control:hover{
-            background-color: black;
-        }
-        #control::before{
-            content: "\2193";
-        }
-        #control.expanded::before{
-            content: "\2191";
-        }
-        line {
-        stroke: #ccc;
-        marker-end:url(#arrow);
-        }
-        text {
-        text-anchor: middle;
-        font-family: "Helvetica Neue", Helvetica, sans-serif;
-        
-        }
-        .treeCanvas{
-            overflow: visible;
-        }
-        .node{
-            cursor: pointer;
-        }
-        .node text{
-            font-size: 10px;
-            transform-origin: 0 0;
-            transform-box: fill-box;
-            transform: rotate(45deg);
-            text-anchor: start;
-            transition: .3s ease-out;
-        }
-        .node text:hover{
-            font-size: 16px;
-            fill: blue;
-        }
-        #arrow{
-            fill: rgb(174, 172, 172);
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="content">
@@ -164,7 +89,8 @@
                     })
                     .attr('dy', function(d) {
                         return 5
-                    });
+                    })
+                    .attr('fill', 'teal');;
             }
             const edgepaths = svg.selectAll(".edgepath")
                 .data(links)
@@ -181,7 +107,7 @@
                 .attr('class', 'edgelabel')
                 .attr('id', function (d, i) {return 'edgelabel' + i})
                 .attr('font-size', 10)
-                .attr('fill', '#aaa');
+                .attr('fill', 'goldenrod');
             edgelabels.append('textPath')
                 .attr('xlink:href', function (d, i) {return '#edgepath' + i})
                 .style("text-anchor", "middle")
