@@ -1,0 +1,31 @@
+source,target,interaction
+Archive,Entry,contains
+Archive,Story,contains
+Archive,Collection,contains
+Archive,Physical Artefact,stores
+Entry,Artefact,is digitised from
+Collection,Entry,contains
+Collection,Story,contains
+Researcher,Collection,curates
+Nokia Designer,Story,shares
+Nokia Designer,Artefact,donates
+Story,Years,contains
+Story,Designer's working life,contains
+Researcher,Story,collects
+Story,Entry,mentions
+Story,Video/Audio recording,contains
+Story,Transcripts,contains
+Entry,Preview Image,contains
+Entry,Aalto Repository,links to
+Aalto Repository,Digital File,hosts
+Aalto Repository,Physical Folder,indicates
+Digital File,Physical Numbering,indicates
+Aalto Repository,Finna,connects to
+Entry,Years,contains
+Entry,Description,contains
+Researcher,Description,writes
+Entry,Keywords,is tagged with
+Collection,Keywords,is tagged with
+Story,Keywords,is tagged with
+Researcher,Keywords,agrees on
+Keywords,Collection,suggests
